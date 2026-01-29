@@ -21,7 +21,6 @@ public static class SaveSystem
             string json = File.ReadAllText(path);
             PlayerSaveData data = JsonUtility.FromJson<PlayerSaveData>(json);
 
-            // Đổ dữ liệu ngược lại vào ScriptableObject
             stats.level = data.level;
             stats.exp = data.exp;
             stats.gold = data.gold;
@@ -30,7 +29,13 @@ public static class SaveSystem
         }
         else
         {
-            Debug.LogWarning("Save file not found. Creating new one or using defaults.");
+            Debug.LogWarning("Save File nonexist. Creating new save file");
+            
+            stats.level = 1;   
+            stats.exp = 0;
+            stats.gold = 0;   
+            
+            SaveData(stats);
         }
     }
 }

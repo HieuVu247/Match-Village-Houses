@@ -21,15 +21,14 @@ public class PlayerStatsManager : MonoBehaviour
         if (instance == null)
         {
             instance = this;
-            DontDestroyOnLoad(gameObject); // Giữ manager này sống qua các màn chơi
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
             Destroy(gameObject);
-            return; // Quan trọng: return để tránh code chạy tiếp
+            return; 
         }
 
-        // --- DÒNG CODE MỚI: Tải dữ liệu ngay khi game bật ---
         SaveSystem.LoadData(playerStats); 
     }
     
@@ -53,6 +52,7 @@ public class PlayerStatsManager : MonoBehaviour
     {
         SaveSystem.SaveData(playerStats);
     }
+    
     public void GainExp(int amount)
     {
         EnqueueNotification(ShowExpGain(amount));
