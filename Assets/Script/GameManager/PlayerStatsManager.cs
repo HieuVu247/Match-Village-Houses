@@ -7,6 +7,7 @@ using System.Collections.Generic;
 public class PlayerStatsManager : MonoBehaviour
 {
     public PlayerStats playerStats;
+    public static PlayerStatsManager instance;
 
     public TextMeshProUGUI levelUpText;
     public TextMeshProUGUI expGainText;
@@ -15,6 +16,23 @@ public class PlayerStatsManager : MonoBehaviour
     private Queue<IEnumerator> notificationQueue = new Queue<IEnumerator>();
     private bool isShowingNotification = false;
 
+    private void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject); // Giữ manager này sống qua các màn chơi
+        }
+        else
+        {
+            Destroy(gameObject);
+            return; // Quan trọng: return để tránh code chạy tiếp
+        }
+
+        // --- DÒNG CODE MỚI: Tải dữ liệu ngay khi game bật ---
+        SaveSystem.LoadData(playerStats); 
+    }
+    
     void Start()
     {
         levelUpText.gameObject.SetActive(true);
@@ -26,6 +44,15 @@ public class PlayerStatsManager : MonoBehaviour
         Debug.Log("Gold: " + playerStats.gold);
     }
 
+    public void SaveGame()
+    {
+        SaveSystem.SaveData(playerStats);
+    }
+    
+    private void OnApplicationQuit()
+    {
+        SaveSystem.SaveData(playerStats);
+    }
     public void GainExp(int amount)
     {
         EnqueueNotification(ShowExpGain(amount));
