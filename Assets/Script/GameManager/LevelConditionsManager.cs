@@ -3,9 +3,12 @@ using TMPro;
 
 public class LevelConditionsManager : MonoBehaviour
 {
+    [Header("Level Settings")]
+    public int currentLevelIndex = 1;
     public float levelTimeInSeconds = 60f;
     public int maxMoves = 20;
 
+    [Header("UI References")]
     private TextMeshProUGUI timerText;
     private TextMeshProUGUI movesText;
     private GameObject losePanel;
@@ -73,7 +76,10 @@ public class LevelConditionsManager : MonoBehaviour
 
         if (currentMoves <= 0 && !FindFirstObjectByType<GameManager>().gameWon)
         {
-            LoseGame("Out of Moves!");
+            if (!levelWon)
+            {
+                LoseGame("Out of moves!");
+            }
         }
     }
 
@@ -107,10 +113,36 @@ public class LevelConditionsManager : MonoBehaviour
         {
             UIQuestManager.Instance?.UpdateQuestProgress(2);
         }
-
+        SaveLevelProgress();
         StopConditionsCheck();
     }
+    private void SaveLevelProgress()
+    {
+        // Lấy PlayerStats thông qua Singleton Manager
+        if (PlayerStatsManager.instance != null)
+        {
+            PlayerStats stats = PlayerStatsManager.instance.playerStats;
 
+            // Nếu màn hiện tại (currentLevelIndex) bằng với màn cao nhất đã mở
+            // Ví dụ: Đang ở màn 0, maxLevelReached là 0 -> Thắng -> maxLevelReached lên 1
+            if (currentLevelIndex >= stats.maxLevelReached)
+            {
+                stats.maxLevelReached = currentLevelIndex + 1;
+                
+                // Cộng vàng thưởng khi thắng (Tùy chọn, ví dụ thưởng 100 vàng)
+                stats.gold += 100; 
+
+                // Gọi hàm lưu JSON
+                SaveSystem.SaveData(stats);
+                
+                Debug.Log($"Đã mở khóa màn {stats.maxLevelReached} và lưu game!");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Không tìm thấy PlayerStatsManager để lưu game!");
+        }
+    }
     public void StopConditionsCheck()
     {
         isLevelActive = false;

@@ -48,6 +48,8 @@ public static class SaveSystem
             stats.unlockedSkins = new List<bool> { true, false, false, false, false, false };
             stats.currentSkinIndex = 0;
             SaveData(stats);
+            UnityEngine.SceneManagement.SceneManager.LoadScene(
+                UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
         }
     }
 }

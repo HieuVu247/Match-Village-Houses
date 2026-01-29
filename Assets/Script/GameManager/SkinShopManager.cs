@@ -14,7 +14,7 @@ public class SkinShopManager : MonoBehaviour
 
     void Start()
     {
-        LoadData();
+        SyncDataFromPlayerStats();
 
         for (int i = 0; i < skins.Length; i++)
         {
@@ -23,34 +23,66 @@ public class SkinShopManager : MonoBehaviour
             UpdateButton(index);
         }
 
-        EquipSkin(equippedIndex);
+        EquipSkin(playerStats.currentSkinIndex);
     }
 
+    void SyncDataFromPlayerStats()
+    {
+        // Đảm bảo list trong PlayerStats đủ số lượng (đề phòng lỗi null hoặc thiếu)
+        if (playerStats.unlockedSkins == null || playerStats.unlockedSkins.Count < skins.Length)
+        {
+            Debug.LogWarning("Danh sách skin trong PlayerStats không khớp, đang tự sửa...");
+            if (playerStats.unlockedSkins == null) playerStats.unlockedSkins = new System.Collections.Generic.List<bool>();
+            
+            while (playerStats.unlockedSkins.Count < skins.Length)
+            {
+                playerStats.unlockedSkins.Add(false); // Mặc định là chưa mở khóa
+            }
+            playerStats.unlockedSkins[0] = true; // Skin mặc định luôn mở
+        }
+
+        // Copy trạng thái từ PlayerStats sang biến isUnlocked của từng nút skin
+        for (int i = 0; i < skins.Length; i++)
+        {
+            skins[i].isUnlocked = playerStats.unlockedSkins[i];
+        }
+    }
+    
     void OnSkinButtonClicked(int index)
     {
         Debug.Log($"Skin button {index} clicked");
 
-        if (!skins[index].isUnlocked)
+        if (!playerStats.unlockedSkins[index]) 
         {
             if (playerStats.gold >= skins[index].price)
             {
                 playerStats.gold -= skins[index].price;
+                
                 skins[index].isUnlocked = true;
-                SaveData();
+                playerStats.unlockedSkins[index] = true;
+
+                SaveSystem.SaveData(playerStats);
+                
                 UpdateButton(index);
+                
+                // Cập nhật UI tiền (nếu có UI hiển thị tiền ở đây thì gọi hàm update)
+                // UIManager.Instance.UpdateGoldUI(); 
+            }
+            else
+            {
+                Debug.Log("Not enough Gold!");
             }
         }
         else
         {
             EquipSkin(index);
-            SaveData();
         }
     }
 
     void EquipSkin(int index)
     {
-        equippedIndex = index;
-
+        playerStats.currentSkinIndex = index;
+        SaveSystem.SaveData(playerStats);
         for (int i = 0; i < skins.Length; i++)
         {
             if (skins[i].isUnlocked)
@@ -71,13 +103,20 @@ public class SkinShopManager : MonoBehaviour
 
     void UpdateButton(int index)
     {
-        if (skins[index].isUnlocked)
+        if (skinButtonTexts[index] != null)
         {
-            skinButtonTexts[index].text = (index == equippedIndex) ? "Equipped" : "Equip";
-        }
-        else
-        {
-            skinButtonTexts[index].text = skins[index].price + " Gold";
+            if (playerStats.currentSkinIndex == index)
+            {
+                skinButtonTexts[index].text = "Equipped";
+            }
+            else if (playerStats.unlockedSkins[index])
+            {
+                skinButtonTexts[index].text = "Select";
+            }
+            else
+            {
+                skinButtonTexts[index].text = skins[index].price.ToString();
+            }
         }
     }
 
