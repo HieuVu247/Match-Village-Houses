@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 
@@ -25,6 +26,14 @@ public static class SaveSystem
             stats.exp = data.exp;
             stats.gold = data.gold;
 
+            stats.maxLevelReached = data.maxLevelReached;
+            stats.currentSkinIndex = data.currentSkinIndex;
+            
+            if (data.unlockedSkins != null && data.unlockedSkins.Count > 0)
+            {
+                stats.unlockedSkins = new List<bool>(data.unlockedSkins);
+            }
+            
             Debug.Log("Game Loaded Successfully!");
         }
         else
@@ -35,6 +44,9 @@ public static class SaveSystem
             stats.exp = 0;
             stats.gold = 0;   
             
+            stats.maxLevelReached = 0;
+            stats.unlockedSkins = new List<bool> { true, false, false, false, false, false };
+            stats.currentSkinIndex = 0;
             SaveData(stats);
         }
     }
